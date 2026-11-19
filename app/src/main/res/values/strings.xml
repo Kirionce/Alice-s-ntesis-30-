@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Alice &amp; Yui</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_assistants">Asistentes</string>
+    <string name="admin_title">Administrador Kirionce</string>
+    <string name="channel_alice">Alice</string>
+    <string name="channel_yui">Yui</string>
+    <string name="channel_group">Alice y Yui</string>
+    <string name="affectionate_mode">Modo cariñosa</string>
+    <string name="input_placeholder_alice">Escribe a Alice, Administrador Kirionce…</string>
+    <string name="input_placeholder_yui">Escribe a Yui, Administrador Kirionce…</string>
+    <string name="input_placeholder_group">Habla con Alice y Yui juntas…</string>
+    <string name="send_message_cd">Enviar mensaje</string>
+    <string name="play_voice_cd">Reproducir voz</string>
+    <string name="stop_voice_cd">Detener voz</string>
+    <string name="clear_chat_cd">Limpiar conversación</string>
+    <string name="copy_message_cd">Copiar mensaje</string>
+    <string name="alice_avatar_cd">Retrato de Alice Synthesis Thirty</string>
+    <string name="yui_avatar_cd">Retrato de Yui</string>
+    <string name="virtual_world_banner_cd">Horizonte del mundo virtual</string>
+</resources>

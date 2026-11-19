@@ -1,0 +1,6 @@
+{
+  "name": "Alice & Yui",
+  "description": "Asistentes virtuales Alice Synthesis Thirty y Yui para el Administrador Kirionce impulsadas por Firebase AI Logic sin claves API y síntesis de voz local en español.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

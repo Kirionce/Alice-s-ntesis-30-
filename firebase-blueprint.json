@@ -1,0 +1,92 @@
+{
+  "entities": {
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "Cloud-synced assistant preferences for an authenticated user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the owner."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name (defaults to Administrador Kirionce)."
+        },
+        "affectionateMode": {
+          "type": "boolean",
+          "description": "Whether Modo cariñosa is enabled for Alice and Yui."
+        },
+        "autoVoiceReply": {
+          "type": "boolean",
+          "description": "Whether assistant replies are spoken automatically."
+        },
+        "selectedModel": {
+          "type": "string",
+          "enum": ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-4-argon"],
+          "description": "Active Gemini model ID used with Firebase AI Logic."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when preferences were created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when preferences were last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "displayName", "affectionateMode", "autoVoiceReply", "selectedModel", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "A single message in a user's Alice, Yui, or Group chat channel.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the owner."
+        },
+        "channelId": {
+          "type": "string",
+          "enum": ["ALICE", "YUI", "GROUP"],
+          "description": "Conversation channel identifier."
+        },
+        "speaker": {
+          "type": "string",
+          "enum": ["USER", "ALICE", "YUI", "SYSTEM"],
+          "description": "Message author speaker identifier."
+        },
+        "content": {
+          "type": "string",
+          "description": "Message body text."
+        },
+        "errorFlag": {
+          "type": "boolean",
+          "description": "True when this system message represents an error."
+        },
+        "sequenceOrder": {
+          "type": "integer",
+          "description": "Monotonic client timestamp/order for deterministic multi-turn sorting."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when message was created (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": ["userId", "channelId", "speaker", "content", "errorFlag", "sequenceOrder", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserPreferences" },
+      "description": "Per-user synced assistant settings and preferences."
+    },
+    "/users/{userId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Per-user cloud-synced chat messages across Alice, Yui, and Group channels."
+    }
+  }
+}

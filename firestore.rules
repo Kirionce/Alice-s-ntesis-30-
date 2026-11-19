@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidModel(model) {
+      return model in ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-4-argon'];
+    }
+
+    function isValidUserPreferences(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.displayName is string &&
+             data.displayName.size() >= 1 &&
+             data.displayName.size() <= 80 &&
+             data.affectionateMode is bool &&
+             data.autoVoiceReply is bool &&
+             data.selectedModel is string &&
+             isValidModel(data.selectedModel) &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidChatMessage(data, userId) {
+      return data.userId is string &&
+             data.userId == userId &&
+             data.channelId is string &&
+             data.channelId in ['ALICE', 'YUI', 'GROUP'] &&
+             data.speaker is string &&
+             data.speaker in ['USER', 'ALICE', 'YUI', 'SYSTEM'] &&
+             data.content is string &&
+             data.content.size() >= 1 &&
+             data.content.size() <= 12000 &&
+             data.errorFlag is bool &&
+             data.sequenceOrder is int &&
+             data.sequenceOrder >= 0 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time;
+    }
+
+    // User preferences document
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isValidId(userId) &&
+                       isOwner(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'displayName', 'affectionateMode',
+                         'autoVoiceReply', 'selectedModel', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'displayName', 'affectionateMode',
+                         'autoVoiceReply', 'selectedModel', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidUserPreferences(incoming(), userId);
+
+      allow update: if isValidId(userId) &&
+                       isOwner(userId) &&
+                       isValidUserPreferences(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'affectionateMode', 'autoVoiceReply',
+                         'selectedModel', 'updatedAt'
+                       ]);
+
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      // User-scoped chat messages subcollection
+      match /messages/{messageId} {
+        allow get: if isValidId(userId) && isValidId(messageId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId);
+
+        allow create: if isValidId(userId) &&
+                         isValidId(messageId) &&
+                         isOwner(userId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'channelId', 'speaker', 'content',
+                           'errorFlag', 'sequenceOrder', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'channelId', 'speaker', 'content',
+                           'errorFlag', 'sequenceOrder', 'createdAt'
+                         ]) &&
+                         isValidChatMessage(incoming(), userId);
+
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(messageId) && isOwner(userId);
+      }
+    }
+  }
+}
